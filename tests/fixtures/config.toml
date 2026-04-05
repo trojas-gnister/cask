@@ -1,0 +1,8 @@
+include = ["packages.toml", "containers.toml"]
+
+[flatpak]
+remotes = ["flathub"]
+packages = ["org.signal.Signal"]
+
+[tools]
+node = "22.0.0"
