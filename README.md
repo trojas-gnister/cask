@@ -162,15 +162,21 @@ cask/
 
 **Key design principle:** All system calls go through the `Executor` protocol. Tests use `MockExecutor` — no real system calls in tests. The `SystemExecutor` uses `asyncio.create_subprocess_exec` with a 120-second timeout.
 
-## Known Limitations
+## Known Limitations / Follow-ups
 
-- **Pacman sync** does not currently run `cask sync pacman` — pacman sync is left to the manager's `list_installed` vs config diff. A future task would wire PacmanSync into the sync engine.
-- **AUR helper selection** defaults to `yay`; `paru` support requires configuration.
-- **Quadlet units** are generated but systemd reload (`systemctl --user daemon-reload`) must be run manually after first sync.
-- **lock apply** (install exact locked versions) is not yet implemented.
-- **Interactive mode** (prompting on undeclared resources) requires a TTY; use `--yes` or `--no` in scripts.
-- **Global `--config` flag** must precede the subcommand: `cask --config /path sync` not `cask sync --config /path`. The `validate` and `config init` subcommands accept their own `--config` flag as a convenience.
-- Tested on Arch Linux with Python 3.11+. Other distros may require adjusting package manager paths.
+- [ ] `container` and `devbox` sections not handled by `cask add` / `cask remove` (only pacman, aur, flatpak, tool work)
+- [ ] `cask lock apply` (install exact locked versions) is not yet implemented
+- [ ] `cask list --all` flag is accepted but does not query undeclared host resources
+- [ ] `cask update` only handles pacman and flatpak — podman, devbox, and tools not yet wired
+- [ ] Container sync `needs_update` only checks image name, not ports/volumes/security changes
+- [ ] Devbox sync `needs_update` only checks image, not package list changes
+- [ ] Flatpak sync `needs_update` always returns False — override diffs not yet detected
+- [ ] Distrobox manager hardcodes `dnf` for package installation — should detect container package manager
+- [ ] Shell hook installation appends without checking for duplicates
+- [ ] No test coverage for CLI commands, sync implementations, or quadlet generation
+- [ ] AUR helper selection defaults to `yay`; `paru` support requires configuration
+- [ ] Interactive mode (prompting on undeclared resources) requires a TTY; use `--yes` or `--no` in scripts
+- [ ] Global `--config` flag must precede the subcommand; `validate` and `config init` accept their own `--config` as convenience
 
 ## Development
 
