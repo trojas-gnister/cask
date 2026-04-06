@@ -29,4 +29,25 @@ def update_cmd(sections: Optional[list[str]] = typer.Argument(None)):
             r = await executor.execute_sudo(["flatpak", "update", "-y"])
             console.print(f"  Flatpak: {'updated' if r.exit_code == 0 else 'failed'}")
 
+        if cfg.podman and (not sections or "podman" in sections):
+            for name, container in cfg.podman.containers.items():
+                r = await executor.execute(["podman", "pull", container.image])
+                status = "pulled" if r.exit_code == 0 else "failed"
+                console.print(f"  Podman [{name}]: {status}")
+
+        if cfg.devbox and (not sections or "devbox" in sections):
+            for name in cfg.devbox.instances:
+                r = await executor.execute(["distrobox", "upgrade", name])
+                status = "upgraded" if r.exit_code == 0 else "failed"
+                console.print(f"  Devbox [{name}]: {status}")
+
+        if cfg.tools and (not sections or "tools" in sections):
+            for tool in cfg.tools:
+                r = await executor.execute(["mise", "install", f"{tool}@latest"])
+                if r.exit_code == 0:
+                    await executor.execute(["mise", "use", "--global", f"{tool}@latest"])
+                    console.print(f"  Tools [{tool}]: updated to latest")
+                else:
+                    console.print(f"  Tools [{tool}]: failed")
+
     asyncio.run(_run())
