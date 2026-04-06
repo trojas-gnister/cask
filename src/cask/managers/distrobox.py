@@ -6,6 +6,23 @@ from cask.executor.protocol import Executor
 from cask.result import Result
 
 
+def _detect_pkg_manager(image: str) -> tuple[str, list[str]]:
+    """Return (pkg_manager_name, install_cmd_prefix) based on image."""
+    image_lower = image.lower()
+    if any(d in image_lower for d in ("fedora", "centos", "rhel", "rocky", "alma")):
+        return "dnf", ["sudo", "dnf", "install", "-y"]
+    elif any(d in image_lower for d in ("ubuntu", "debian", "mint")):
+        return "apt", ["sudo", "apt-get", "install", "-y"]
+    elif any(d in image_lower for d in ("arch", "manjaro", "endeavour")):
+        return "pacman", ["sudo", "pacman", "-S", "--noconfirm"]
+    elif any(d in image_lower for d in ("opensuse", "suse", "tumbleweed")):
+        return "zypper", ["sudo", "zypper", "install", "-y"]
+    elif any(d in image_lower for d in ("alpine",)):
+        return "apk", ["sudo", "apk", "add"]
+    else:
+        return "dnf", ["sudo", "dnf", "install", "-y"]  # fallback
+
+
 class DistroboxManager:
     """Manages Distrobox instances."""
 
@@ -21,7 +38,8 @@ class DistroboxManager:
 
         # Install packages if specified
         if cfg.packages:
-            pkg_cmd = f"distrobox enter {name} -- sudo dnf install -y {' '.join(cfg.packages)}"
+            _, install_prefix = _detect_pkg_manager(cfg.image)
+            pkg_cmd = f"distrobox enter {name} -- {' '.join(install_prefix)} {' '.join(cfg.packages)}"
             await exec.execute_shell(pkg_cmd)
             actions.append(f"Installed {len(cfg.packages)} packages in {name}")
 
