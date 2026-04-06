@@ -66,4 +66,44 @@ def lock_verify():
 
 def lock_apply():
     """Install exact locked versions."""
-    console.print("[yellow]lock apply not yet implemented[/yellow]")
+    import os
+    from cask.cli.app import get_executor
+    from cask.state.lockfile import Lockfile
+    from cask.managers.pacman import PacmanManager
+
+    executor = get_executor()
+    lf = Lockfile(os.path.join(state_dir(), "lock.json"))
+    lf.load()
+
+    if not lf.pins:
+        console.print("[yellow]No lockfile found or lockfile is empty. Run 'cask lock create' first.[/yellow]")
+        return
+
+    async def _run():
+        mgr = PacmanManager()
+        installed = await mgr.list_installed(executor)
+
+        to_install: list[tuple[str, str]] = []
+        for name, pinned_version in lf.pins.items():
+            actual = installed.get(name)
+            if actual != pinned_version:
+                to_install.append((name, pinned_version))
+                status = f"[yellow]{actual or 'not installed'}[/yellow]" if actual else "[yellow]not installed[/yellow]"
+                console.print(f"  {name}: {status} -> [cyan]{pinned_version}[/cyan]")
+            else:
+                console.print(f"  {name}: [green]{actual}[/green] (ok)")
+
+        if not to_install:
+            console.print("[green]All pinned versions already installed[/green]")
+            return
+
+        console.print(f"\nInstalling {len(to_install)} pinned package(s)...")
+        for name, version in to_install:
+            pkg_spec = f"{name}={version}"
+            r = await executor.execute_sudo(["pacman", "-S", "--noconfirm", pkg_spec])
+            if r.exit_code == 0:
+                console.print(f"  [green]OK[/green] installed {name}={version}")
+            else:
+                console.print(f"  [red]FAIL[/red] {name}={version}: {r.stderr}")
+
+    asyncio.run(_run())
