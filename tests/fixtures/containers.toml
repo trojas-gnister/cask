@@ -1,0 +1,4 @@
+[podman.containers.nginx]
+image = "docker.io/library/nginx:latest"
+ports = ["8080:80"]
+quadlet = true

@@ -1,0 +1,19 @@
+"""Executor protocol — abstracts all system calls."""
+from __future__ import annotations
+
+from typing import Protocol, runtime_checkable
+
+from cask.result import ExecResult
+
+
+@runtime_checkable
+class Executor(Protocol):
+    """Interface for executing system commands."""
+    dry_run: bool
+
+    async def execute(self, cmd: list[str]) -> ExecResult: ...
+    async def execute_sudo(self, cmd: list[str]) -> ExecResult: ...
+    async def execute_shell(self, cmd: str) -> ExecResult: ...
+    def file_exists(self, path: str) -> bool: ...
+    def read_file(self, path: str) -> str: ...
+    def write_file(self, path: str, content: str, sudo: bool = False) -> None: ...
