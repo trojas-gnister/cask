@@ -83,8 +83,12 @@ def sync_cmd(sections: Optional[list[str]] = typer.Argument(None)):
                     for sock in override.sockets:
                         flags.append(f"--socket={sock}")
                     if flags:
-                        await mgr.set_override(app_id, flags, executor)
-                        console.print(f"  Applied overrides for {app_id}")
+                        result = await mgr.set_override(app_id, flags, executor)
+                        if result.ok:
+                            console.print(f"  Applied overrides for {app_id}")
+                        else:
+                            console.print(f"  [red]FAIL[/red] overrides for {app_id}: {result.message}")
+                            total_failed += 1
 
         console.print(f"\n[bold]Total:[/bold] {total_applied} applied, {total_updated} updated, "
                      f"{total_removed} removed, {total_kept} kept, {total_failed} failed")

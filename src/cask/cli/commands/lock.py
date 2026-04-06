@@ -42,24 +42,43 @@ def lock_create():
 def lock_verify():
     """Verify installed versions match lockfile."""
     import os
-    from cask.cli.app import get_executor
+    from cask.cli.app import get_config, get_executor
     from cask.state.lockfile import Lockfile
     from cask.managers.pacman import PacmanManager
+    from cask.managers.flatpak import FlatpakManager
 
     executor = get_executor()
     lf = Lockfile(os.path.join(state_dir(), "lock.json"))
     lf.load()
 
+    if not lf.pins:
+        console.print("[yellow]No lockfile found or empty[/yellow]")
+        return
+
+    cfg = get_config()
+    flatpak_apps = set(cfg.flatpak.packages) if cfg.flatpak else set()
+
     async def _run():
-        installed = await PacmanManager().list_installed(executor)
+        pacman_installed = await PacmanManager().list_installed(executor)
+        flatpak_installed = await FlatpakManager().list_installed(executor)
+
         mismatches = 0
         for name, pinned in lf.pins.items():
-            actual = installed.get(name, "not installed")
+            if name in flatpak_apps:
+                actual = flatpak_installed.get(name, "not installed")
+            else:
+                actual = pacman_installed.get(name, "not installed")
+
             if actual != pinned:
-                console.print(f"  [red]MISMATCH[/red] {name}: {pinned} -> {actual}")
+                console.print(f"  [red]MISMATCH[/red] {name}: locked={pinned} actual={actual}")
                 mismatches += 1
+            else:
+                console.print(f"  [green]OK[/green] {name}: {pinned}")
+
         if mismatches == 0:
-            console.print("[green]All versions match lockfile[/green]")
+            console.print("\n[green]All versions match lockfile[/green]")
+        else:
+            console.print(f"\n[red]{mismatches} mismatch(es)[/red]")
 
     asyncio.run(_run())
 

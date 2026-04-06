@@ -37,10 +37,10 @@ def list_cmd(
                 from cask.managers.pacman import PacmanManager
                 from cask.managers.aur import AURManager
                 installed = await PacmanManager().list_installed(executor)
-                for pkg in sorted(installed):
-                    if pkg not in declared:
-                        table.add_row(pkg, "[yellow](undeclared)[/yellow]")
                 aur_installed = await AURManager().list_installed(executor)
+                for pkg in sorted(installed):
+                    if pkg not in declared and pkg not in aur_installed:
+                        table.add_row(pkg, "[yellow](undeclared)[/yellow]")
                 for pkg in sorted(aur_installed):
                     if pkg not in declared_aur:
                         table.add_row(f"{pkg} (AUR)", "[yellow](undeclared)[/yellow]")
