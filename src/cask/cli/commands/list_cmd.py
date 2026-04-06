@@ -70,8 +70,9 @@ def list_cmd(
             if all_resources:
                 from cask.managers.podman import PodmanManager
                 running = await PodmanManager().list_containers(executor)
-                for name, image in sorted(running.items()):
+                for name, info in sorted(running.items()):
                     if name not in declared:
+                        image = info.get("image", "") if isinstance(info, dict) else info
                         table.add_row(name, image, "[yellow](undeclared)[/yellow]")
 
             console.print(table)
@@ -84,7 +85,8 @@ def list_cmd(
                 table.add_column("Name")
                 table.add_column("Image")
                 table.add_column("Status")
-                for name, image in sorted(running.items()):
+                for name, info in sorted(running.items()):
+                    image = info.get("image", "") if isinstance(info, dict) else info
                     table.add_row(name, image, "[yellow](undeclared)[/yellow]")
                 console.print(table)
 
