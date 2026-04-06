@@ -40,10 +40,7 @@ class DevboxSync:
         return await self._mgr.remove(resource_id, exec)
 
     def needs_update(self, host: DevboxResource, config: DevboxResource) -> bool:
-        return (
-            host.image != config.image
-            or sorted(host.packages) != sorted(config.packages)
-        )
+        return host.image != config.image
 
     def resource_id(self, resource: DevboxResource) -> str:
         return resource.name

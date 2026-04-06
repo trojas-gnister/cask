@@ -40,12 +40,14 @@ def test_resource_id():
     assert sync.resource_id(r) == "org.signal.Signal"
 
 
-def test_needs_update_with_override():
+def test_needs_update_always_false():
+    # needs_update always returns False — overrides are applied as a post-sync
+    # step and are idempotent, so reinstalling on every sync is not needed.
     overrides = {"org.signal.Signal": AppOverride(filesystems=["home"])}
     sync = FlatpakSync(overrides=overrides)
     host = FlatpakResource(app_id="org.signal.Signal")
     config = FlatpakResource(app_id="org.signal.Signal")
-    assert sync.needs_update(host, config) is True
+    assert sync.needs_update(host, config) is False
 
 
 def test_needs_update_without_override():

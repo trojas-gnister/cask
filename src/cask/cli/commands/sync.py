@@ -72,6 +72,20 @@ def sync_cmd(sections: Optional[list[str]] = typer.Argument(None)):
                 state_mgr.mark_applied(section_name, section_hash)
                 any_synced = True
 
+            # Apply flatpak overrides as a post-sync step (idempotent)
+            if section_name == "flatpak" and cfg.flatpak and cfg.flatpak.overrides:
+                from cask.managers.flatpak import FlatpakManager
+                mgr = FlatpakManager()
+                for app_id, override in cfg.flatpak.overrides.items():
+                    flags = []
+                    for fs in override.filesystems:
+                        flags.append(f"--filesystem={fs}")
+                    for sock in override.sockets:
+                        flags.append(f"--socket={sock}")
+                    if flags:
+                        await mgr.set_override(app_id, flags, executor)
+                        console.print(f"  Applied overrides for {app_id}")
+
         console.print(f"\n[bold]Total:[/bold] {total_applied} applied, {total_updated} updated, "
                      f"{total_removed} removed, {total_kept} kept, {total_failed} failed")
 

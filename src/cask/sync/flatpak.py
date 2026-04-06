@@ -35,7 +35,7 @@ class FlatpakSync:
         return await self._mgr.remove(resource_id, exec)
 
     def needs_update(self, host: FlatpakResource, config: FlatpakResource) -> bool:
-        return config.app_id in self._overrides
+        return False  # Overrides are applied separately after sync
 
     def resource_id(self, resource: FlatpakResource) -> str:
         return resource.app_id

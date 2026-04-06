@@ -24,60 +24,63 @@ def remove_cmd(
     async def _run():
         for item in items:
             if section == "pacman":
-                remove_from_config(_config_path, section, item)
                 result = await PacmanManager().remove(item, executor)
                 console.print(f"  {'[green]OK[/green]' if result.ok else '[red]FAIL[/red]'} {result.message}")
+                if result.ok:
+                    remove_from_config(_config_path, section, item)
             elif section == "flatpak":
-                remove_from_config(_config_path, section, item)
                 result = await FlatpakManager().remove(item, executor)
                 console.print(f"  {'[green]OK[/green]' if result.ok else '[red]FAIL[/red]'} {result.message}")
+                if result.ok:
+                    remove_from_config(_config_path, section, item)
             elif section == "aur":
-                remove_from_config(_config_path, section, item)
                 from cask.managers.aur import AURManager
                 result = await AURManager().remove(item, executor)
                 console.print(f"  {'[green]OK[/green]' if result.ok else '[red]FAIL[/red]'} {result.message}")
+                if result.ok:
+                    remove_from_config(_config_path, section, item)
             elif section == "tool":
                 from cask.managers.mise import MiseManager
                 from cask.config.writer import _load_raw, _save
-                # Remove from config tools table
-                try:
-                    data = _load_raw(_config_path)
-                except Exception:
-                    data = {}
-                if "tools" in data and item in data["tools"]:
-                    del data["tools"][item]
-                    _save(_config_path, data)
-                console.print(f"  Removed {item} from config")
                 result = await MiseManager().remove(item, executor)
                 console.print(f"  {'[green]OK[/green]' if result.ok else '[red]FAIL[/red]'} {result.message}")
+                if result.ok:
+                    try:
+                        data = _load_raw(_config_path)
+                    except Exception:
+                        data = {}
+                    if "tools" in data and item in data["tools"]:
+                        del data["tools"][item]
+                        _save(_config_path, data)
+                    console.print(f"  Removed {item} from config")
             elif section == "container":
                 from cask.managers.podman import PodmanManager
                 from cask.config.writer import _load_raw, _save
-                # Remove from config
-                try:
-                    data = _load_raw(_config_path)
-                except Exception:
-                    data = {}
-                if "podman" in data and "containers" in data["podman"] and item in data["podman"]["containers"]:
-                    del data["podman"]["containers"][item]
-                    _save(_config_path, data)
-                console.print(f"  Removed container {item} from config")
                 result = await PodmanManager().remove(item, executor)
                 console.print(f"  {'[green]OK[/green]' if result.ok else '[red]FAIL[/red]'} {result.message}")
+                if result.ok:
+                    try:
+                        data = _load_raw(_config_path)
+                    except Exception:
+                        data = {}
+                    if "podman" in data and "containers" in data["podman"] and item in data["podman"]["containers"]:
+                        del data["podman"]["containers"][item]
+                        _save(_config_path, data)
+                    console.print(f"  Removed container {item} from config")
             elif section == "devbox":
                 from cask.managers.distrobox import DistroboxManager
                 from cask.config.writer import _load_raw, _save
-                # Remove from config
-                try:
-                    data = _load_raw(_config_path)
-                except Exception:
-                    data = {}
-                if "devbox" in data and "instances" in data["devbox"] and item in data["devbox"]["instances"]:
-                    del data["devbox"]["instances"][item]
-                    _save(_config_path, data)
-                console.print(f"  Removed devbox instance {item} from config")
                 result = await DistroboxManager().remove(item, executor)
                 console.print(f"  {'[green]OK[/green]' if result.ok else '[red]FAIL[/red]'} {result.message}")
+                if result.ok:
+                    try:
+                        data = _load_raw(_config_path)
+                    except Exception:
+                        data = {}
+                    if "devbox" in data and "instances" in data["devbox"] and item in data["devbox"]["instances"]:
+                        del data["devbox"]["instances"][item]
+                        _save(_config_path, data)
+                    console.print(f"  Removed devbox instance {item} from config")
             else:
                 console.print(f"[yellow]Unknown section: {section}[/yellow]")
 
