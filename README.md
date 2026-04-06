@@ -164,16 +164,16 @@ cask/
 
 ## Known Limitations / Follow-ups
 
-- [ ] `container` and `devbox` sections not handled by `cask add` / `cask remove` (only pacman, aur, flatpak, tool work)
-- [ ] `cask lock apply` (install exact locked versions) is not yet implemented
-- [ ] `cask list --all` flag is accepted but does not query undeclared host resources
-- [ ] `cask update` only handles pacman and flatpak — podman, devbox, and tools not yet wired
-- [ ] Container sync `needs_update` only checks image name, not ports/volumes/security changes
-- [ ] Devbox sync `needs_update` only checks image, not package list changes
-- [ ] Flatpak sync `needs_update` always returns False — override diffs not yet detected
-- [ ] Distrobox manager hardcodes `dnf` for package installation — should detect container package manager
-- [ ] Shell hook installation appends without checking for duplicates
-- [ ] No test coverage for CLI commands, sync implementations, or quadlet generation
+- [x] ~~`container` and `devbox` not handled by add/remove~~ — full support added
+- [x] ~~`cask lock apply` not implemented~~ — implemented for pacman packages
+- [x] ~~`cask list --all` doesn't query host~~ — now shows undeclared resources
+- [x] ~~`cask update` only pacman/flatpak~~ — podman, devbox, tools wired
+- [x] ~~Container sync only checks image~~ — now checks ports, volumes too
+- [x] ~~Devbox sync only checks image~~ — now checks packages
+- [x] ~~Flatpak sync always returns False~~ — detects apps with configured overrides
+- [x] ~~Distrobox hardcodes dnf~~ — auto-detects package manager from image name
+- [x] ~~Hook install appends duplicates~~ — checks for existing marker before appending
+- [x] ~~No test coverage for CLI/sync/quadlet~~ — 48 new tests added (115 total)
 - [ ] AUR helper selection defaults to `yay`; `paru` support requires configuration
 - [ ] Interactive mode (prompting on undeclared resources) requires a TTY; use `--yes` or `--no` in scripts
 - [ ] Global `--config` flag must precede the subcommand; `validate` and `config init` accept their own `--config` as convenience
@@ -182,7 +182,7 @@ cask/
 
 ```bash
 source .venv/bin/activate
-pytest -v              # Run all 67 tests
+pytest -v              # Run all 115 tests
 cask version           # cask 0.1.0
 cask --help
 ```
