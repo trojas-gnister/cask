@@ -43,7 +43,7 @@ def sync_cmd(sections: Optional[list[str]] = typer.Argument(None)):
         if cfg.pacman and cfg.pacman.aur_packages and (not sections or "aur" in sections):
             syncs.append(("aur", "AUR", AURSync(), cfg.pacman))
         if cfg.flatpak and (not sections or "flatpak" in sections):
-            syncs.append(("flatpak", "Flatpak", FlatpakSync(), cfg.flatpak))
+            syncs.append(("flatpak", "Flatpak", FlatpakSync(overrides=cfg.flatpak.overrides), cfg.flatpak))
         if cfg.podman and (not sections or "podman" in sections):
             syncs.append(("podman", "Podman", ContainerSync(), cfg.podman))
         if cfg.devbox and (not sections or "devbox" in sections):

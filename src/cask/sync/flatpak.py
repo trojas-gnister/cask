@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from cask.config.models import FlatpakConfig
+from cask.config.models import AppOverride, FlatpakConfig
 from cask.executor.protocol import Executor
 from cask.managers.flatpak import FlatpakManager
 from cask.result import Result
@@ -16,8 +16,9 @@ class FlatpakResource:
 
 
 class FlatpakSync:
-    def __init__(self) -> None:
+    def __init__(self, overrides: dict[str, AppOverride] | None = None) -> None:
         self._mgr = FlatpakManager()
+        self._overrides = overrides or {}
 
     async def get_host_resources(self, exec: Executor) -> list[FlatpakResource]:
         apps = await self._mgr.list_installed(exec)
@@ -34,7 +35,7 @@ class FlatpakSync:
         return await self._mgr.remove(resource_id, exec)
 
     def needs_update(self, host: FlatpakResource, config: FlatpakResource) -> bool:
-        return False  # Flatpak auto-updates; override detection is separate
+        return config.app_id in self._overrides
 
     def resource_id(self, resource: FlatpakResource) -> str:
         return resource.app_id
