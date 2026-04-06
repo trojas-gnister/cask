@@ -26,7 +26,7 @@ def generate_quadlet(name: str, cfg: ContainerConfig) -> str:
     if cfg.security.read_only:
         lines.append("ReadOnly=true")
     if cfg.security.no_new_privileges:
-        lines.append("SecurityLabelDisable=true")
+        lines.append("NoNewPrivileges=true")
     lines.extend(["", "[Install]", "WantedBy=default.target", ""])
     return "\n".join(lines)
 

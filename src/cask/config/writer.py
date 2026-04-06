@@ -25,13 +25,16 @@ def add_to_config(path: str, section: str, item: str) -> None:
     # Map section to the right list key
     list_key = _section_list_key(section)
 
-    if section not in data:
-        data[section] = {}
-    if list_key not in data[section]:
-        data[section][list_key] = []
+    # AUR packages live under [pacman] in the TOML, not under a separate [aur] table
+    toml_section = "pacman" if section == "aur" else section
 
-    if item not in data[section][list_key]:
-        data[section][list_key].append(item)
+    if toml_section not in data:
+        data[toml_section] = {}
+    if list_key not in data[toml_section]:
+        data[toml_section][list_key] = []
+
+    if item not in data[toml_section][list_key]:
+        data[toml_section][list_key].append(item)
 
     _save(path, data)
 
@@ -44,10 +47,11 @@ def remove_from_config(path: str, section: str, item: str) -> None:
         return
 
     list_key = _section_list_key(section)
+    toml_section = "pacman" if section == "aur" else section
 
-    if section in data and list_key in data[section]:
-        data[section][list_key] = [
-            i for i in data[section][list_key] if i != item
+    if toml_section in data and list_key in data[toml_section]:
+        data[toml_section][list_key] = [
+            i for i in data[toml_section][list_key] if i != item
         ]
         _save(path, data)
 

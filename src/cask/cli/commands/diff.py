@@ -17,12 +17,17 @@ def diff_cmd(sections: Optional[list[str]] = typer.Argument(None)):
     from cask.sync.containers import ContainerSync
     from cask.sync.devbox import DevboxSync
     from cask.sync.tools import ToolSync
+    from cask.sync.pacman import PacmanSync, AURSync
 
     cfg = get_config()
     executor = get_executor()
 
     async def _run():
         diffs = []
+        if cfg.pacman and cfg.pacman.packages and (not sections or "pacman" in sections):
+            diffs.append(("Pacman", PacmanSync(), cfg.pacman))
+        if cfg.pacman and cfg.pacman.aur_packages and (not sections or "aur" in sections):
+            diffs.append(("AUR", AURSync(), cfg.pacman))
         if cfg.flatpak and (not sections or "flatpak" in sections):
             diffs.append(("Flatpak", FlatpakSync(), cfg.flatpak))
         if cfg.podman and (not sections or "podman" in sections):
