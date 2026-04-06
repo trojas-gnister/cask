@@ -43,3 +43,4 @@ async def test_list_containers():
     mgr = PodmanManager()
     containers = await mgr.list_containers(mock)
     assert "nginx" in containers
+    assert containers["nginx"]["image"] == "nginx:latest"

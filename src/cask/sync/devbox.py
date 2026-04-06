@@ -1,7 +1,7 @@
 """Distrobox sync implementation."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from cask.config.models import DevboxConfig, DevboxInstanceConfig
 from cask.executor.protocol import Executor
@@ -14,6 +14,7 @@ class DevboxResource:
     name: str
     config: DevboxInstanceConfig | None = None
     image: str = ""
+    packages: list[str] = field(default_factory=list)
 
 
 class DevboxSync:
@@ -26,7 +27,7 @@ class DevboxSync:
 
     def get_config_resources(self, config: DevboxConfig) -> list[DevboxResource]:
         return [
-            DevboxResource(name=n, config=c, image=c.image)
+            DevboxResource(name=n, config=c, image=c.image, packages=list(c.packages))
             for n, c in config.instances.items()
         ]
 
@@ -39,7 +40,10 @@ class DevboxSync:
         return await self._mgr.remove(resource_id, exec)
 
     def needs_update(self, host: DevboxResource, config: DevboxResource) -> bool:
-        return host.image != config.image
+        return (
+            host.image != config.image
+            or sorted(host.packages) != sorted(config.packages)
+        )
 
     def resource_id(self, resource: DevboxResource) -> str:
         return resource.name

@@ -29,7 +29,7 @@ def diff_cmd(sections: Optional[list[str]] = typer.Argument(None)):
         if cfg.pacman and cfg.pacman.aur_packages and (not sections or "aur" in sections):
             diffs.append(("AUR", AURSync(), cfg.pacman))
         if cfg.flatpak and (not sections or "flatpak" in sections):
-            diffs.append(("Flatpak", FlatpakSync(), cfg.flatpak))
+            diffs.append(("Flatpak", FlatpakSync(overrides=cfg.flatpak.overrides), cfg.flatpak))
         if cfg.podman and (not sections or "podman" in sections):
             diffs.append(("Podman", ContainerSync(), cfg.podman))
         if cfg.devbox and (not sections or "devbox" in sections):
