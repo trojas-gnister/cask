@@ -7,6 +7,8 @@ from rich.console import Console
 
 console = Console()
 
+HOOK_MARKER = "# Cask auto-enter hooks"
+
 
 def hooks_install():
     """Install shell auto-enter hooks."""
@@ -26,6 +28,15 @@ def hooks_install():
     hook_code = generate_hook(shell, cfg.devbox.hooks)
     rc_file = {"bash": "~/.bashrc", "zsh": "~/.zshrc", "fish": "~/.config/fish/config.fish"}[shell]
     rc_path = os.path.expanduser(rc_file)
+
+    # Check for existing hooks
+    existing = ""
+    if os.path.exists(rc_path):
+        with open(rc_path) as f:
+            existing = f.read()
+        if HOOK_MARKER in existing:
+            console.print("[yellow]Hooks already installed — remove first with 'cask devbox remove'[/yellow]")
+            return
 
     with open(rc_path, "a") as f:
         f.write(f"\n{hook_code}")
